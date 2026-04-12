@@ -231,7 +231,7 @@
                             title: city + titles[i % titles.length] + " (物件" + (i+1) + ")",
                             city: city,
                             // 前 5 筆設為 6400 方便測試
-                            price: i < 5 ? 6400 : (Math.floor(Math.random()*20000) + 5000),
+                            price: i < 2 ? 6400 : (Math.floor(Math.random()*20000) + 5000),
                             type: types[i % 3],
                             size: Math.floor(Math.random()*25) + 5,
                             floor: Math.floor(Math.random()*15) + 1,
