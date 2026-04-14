@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tyni House - 租屋平台 </title>
+    <title>Tyni House - 學生租屋平台 </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
@@ -12,7 +12,7 @@
         .primary-green { color: #48bb78; }
         .bg-primary-green { background-color: #48bb78; }
         .card-hover { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .card-hover:hover { transform: translateY(-10px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
+        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         [v-cloak] { display: none; }
     </style>
@@ -22,101 +22,114 @@
         <!-- 導覽列 -->
         <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-green-50">
             <div class="container mx-auto px-4 h-20 flex justify-between items-center">
-                <!-- Logo 區 -->
                 <div class="flex items-center gap-3 cursor-pointer" @click="resetFilter">
                     <img src="logo.jpeg" alt="Logo" class="h-12 w-auto rounded-lg" onerror="this.src='https://via.placeholder.com/50/48bb78/fff?text=TD'">
                     <div class="flex flex-col">
                         <span class="text-xl font-black primary-green leading-tight">Tyni House</span>
-                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ lang === 'zh' ? '4120C214 玲情怡' : '4120C214 Tình Di' }}</span>
+                        <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">4120C214 玲情怡</span>
                     </div>
                 </div>
 
-                <!-- 語系切換與用戶區 -->
                 <div class="flex items-center gap-4">
-                    <button @click="toggleLang" class="bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition">
+                    <button @click="toggleLang" class="bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition shadow-sm">
                         {{ lang === 'zh' ? 'Tiếng Việt' : '中文介面' }}
                     </button>
-                    
                     <template v-if="!currentUser">
                         <button @click="openModal('login')" class="text-gray-500 hover:text-green-600 font-bold text-sm">{{ t.login }}</button>
                     </template>
                     <template v-else>
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-700 font-bold text-sm">Hi, {{ currentUser.name }}</span>
-                            <button @click="logout" class="text-red-400 text-xs underline">{{ t.logout }}</button>
+                            <span class="text-gray-700 font-bold text-sm">👤 {{ currentUser.name }}</span>
+                            <button @click="logout" class="text-red-400 text-[10px] underline">{{ t.logout }}</button>
                         </div>
                     </template>
                 </div>
             </div>
         </nav>
 
-        <!-- 篩選列 -->
-        <div class="bg-white border-b sticky top-20 z-40">
-            <div class="container mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <select v-model="filter.city" class="border-2 border-gray-50 p-3 rounded-2xl bg-gray-50 focus:border-green-400 outline-none transition font-bold text-gray-600">
-                    <option value="">{{ t.allAreas }}</option>
-                    <option v-for="c in cities" :value="c">{{c}}</option>
-                </select>
-                <select v-model="filter.type" class="border-2 border-gray-50 p-3 rounded-2xl bg-gray-50 focus:border-green-400 outline-none transition font-bold text-gray-600">
-                    <option value="">{{ t.allTypes }}</option>
-                    <option value="獨立套房">{{ t.type1 }}</option>
-                    <option value="整層住家">{{ t.type2 }}</option>
-                    <option value="雅房">{{ t.type3 }}</option>
-                </select>
-                <select v-model="filter.priceRange" class="border-2 border-gray-50 p-3 rounded-2xl bg-gray-50 focus:border-green-400 outline-none transition font-bold text-gray-600">
-                    <option value="all">{{ t.allPrice }}</option>
-                    <option value="0-6000">{{ t.price1 }}</option>
-                    <option value="6001-8000">{{ t.price2 }}</option>
-                    <option value="8001-999999">{{ t.price3 }}</option>
-                </select>
-                <button @click="resetFilter" class="bg-gray-800 text-white font-bold py-3 rounded-2xl hover:bg-black transition active:scale-95">
-                    {{ t.resetBtn }}
-                </button>
+        <!-- 橫向篩選列 (Horizontal Filter Bar) -->
+        <div class="bg-white border-b sticky top-20 z-40 shadow-sm overflow-x-auto no-scrollbar">
+            <div class="container mx-auto px-4 py-4 min-w-[600px] md:min-w-0">
+                <div class="flex flex-row items-center gap-4">
+                    <!-- 地區選擇 -->
+                    <div class="flex-1 flex items-center bg-gray-50 border-2 border-gray-50 rounded-2xl px-3 hover:border-green-300 transition">
+                        <span class="text-[10px] text-gray-400 font-bold mr-2 whitespace-nowrap">{{ t.areaLabel }}</span>
+                        <select v-model="filter.city" class="bg-transparent w-full py-3 text-sm font-bold text-gray-700 outline-none">
+                            <option value="">{{ t.allAreas }}</option>
+                            <option v-for="c in cities" :value="c">{{c}}</option>
+                        </select>
+                    </div>
+
+                    <!-- 價格選擇 -->
+                    <div class="flex-1 flex items-center bg-gray-50 border-2 border-gray-50 rounded-2xl px-3 hover:border-green-300 transition">
+                        <span class="text-[10px] text-gray-400 font-bold mr-2 whitespace-nowrap">{{ t.priceLabelSelect }}</span>
+                        <select v-model="filter.priceRange" class="bg-transparent w-full py-3 text-sm font-bold text-gray-700 outline-none">
+                            <option value="all">{{ t.allPrice }}</option>
+                            <option value="0-6000">{{ t.price1 }}</option>
+                            <option value="6001-8000">{{ t.price2 }}</option>
+                            <option value="8001-999999">{{ t.price3 }}</option>
+                        </select>
+                    </div>
+
+                    <!-- 房型選擇 -->
+                    <div class="flex-1 flex items-center bg-gray-50 border-2 border-gray-50 rounded-2xl px-3 hover:border-green-300 transition">
+                        <span class="text-[10px] text-gray-400 font-bold mr-2 whitespace-nowrap">{{ t.typeLabel }}</span>
+                        <select v-model="filter.type" class="bg-transparent w-full py-3 text-sm font-bold text-gray-700 outline-none">
+                            <option value="">{{ t.allTypes }}</option>
+                            <option value="獨立套房">{{ t.type1 }}</option>
+                            <option value="整層住家">{{ t.type2 }}</option>
+                            <option value="雅房">{{ t.type3 }}</option>
+                        </select>
+                    </div>
+
+                    <!-- 重置按鈕 -->
+                    <button @click="resetFilter" class="bg-gray-800 text-white font-bold px-6 py-3 rounded-2xl hover:bg-black transition active:scale-95 whitespace-nowrap text-sm">
+                        {{ t.resetBtn }}
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- 房源列表 -->
+        <!-- 列表主體 -->
         <main class="container mx-auto py-10 px-4">
-            <h2 class="text-2xl font-black text-gray-800 mb-8 flex items-center gap-3">
-                <span class="w-1.5 h-8 bg-primary-green rounded-full"></span>
+            <h2 class="text-xl font-black text-gray-800 mb-8 flex items-center gap-3">
+                <span class="w-1.5 h-6 bg-primary-green rounded-full"></span>
                 {{ t.listTitle }} ({{ filteredHouses.length }})
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden card-hover flex flex-col group cursor-pointer relative">
-                    <div class="relative h-56 overflow-hidden">
-                        <img :src="h.img" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
-                        <div class="absolute bottom-4 left-4 bg-black/40 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-md italic">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2rem] border border-gray-100 overflow-hidden card-hover flex flex-col group cursor-pointer relative shadow-sm">
+                    <div class="relative h-48 overflow-hidden">
+                        <img :src="h.img" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-3 left-3 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
                             {{h.city}}
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="text-[10px] font-bold text-green-500 mb-2">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 line-clamp-1 group-hover:text-green-600 transition">
-                            {{ lang === 'zh' ? h.title : h.titleVN }}
-                        </h3>
-                        <div class="flex justify-between items-center border-t border-gray-50 pt-4">
-                            <div class="text-2xl font-black text-green-600">${{h.price.toLocaleString()}}</div>
-                            <span class="text-[10px] font-bold bg-green-50 text-green-600 px-3 py-1.5 rounded-full uppercase">{{ t.viewDetail }}</span>
+                    <div class="p-5">
+                        <div class="text-[10px] font-bold text-green-500 mb-1 uppercase tracking-widest">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
+                        <h3 class="text-md font-bold text-gray-800 mb-4 line-clamp-1 leading-tight">{{ lang === 'zh' ? h.title : h.titleVN }}</h3>
+                        <div class="flex justify-between items-center border-t border-gray-50 pt-3">
+                            <div class="text-xl font-black text-green-600">${{h.price.toLocaleString()}}</div>
+                            <span class="text-[10px] font-bold bg-green-50 text-green-600 px-3 py-1.5 rounded-full">{{ t.viewDetail }}</span>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- 詳情視窗 (包含預約邏輯) -->
+        <!-- 詳情視窗 (須登入預約) -->
         <div v-if="selectedHouse" class="fixed inset-0 bg-green-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-4" @click.self="selectedHouse = null">
-            <div class="bg-white w-full max-w-5xl max-h-[90vh] rounded-[3rem] overflow-hidden relative flex flex-col md:flex-row shadow-2xl animate-in zoom-in duration-300">
+            <div class="bg-white w-full max-w-5xl max-h-[90vh] rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row shadow-2xl animate-in zoom-in duration-300">
                 <button @click="selectedHouse = null" class="absolute top-6 right-6 z-10 bg-white shadow-xl rounded-full w-10 h-10 font-bold">✕</button>
                 <div class="w-full md:w-3/5 h-64 md:h-auto overflow-hidden">
                     <img :src="selectedHouse.img" class="w-full h-full object-cover">
                 </div>
-                <div class="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto no-scrollbar flex flex-col bg-white">
+                <div class="w-full md:w-2/5 p-8 overflow-y-auto no-scrollbar bg-white flex flex-col">
                     <span class="text-xs font-bold text-green-500 bg-green-50 px-3 py-1 rounded-full uppercase w-fit">{{ lang === 'zh' ? selectedHouse.type : selectedHouse.typeVN }}</span>
-                    <h2 class="text-3xl font-black text-gray-800 mt-4 mb-2 leading-tight">{{ lang === 'zh' ? selectedHouse.title : selectedHouse.titleVN }}</h2>
+                    <h2 class="text-2xl font-black text-gray-800 mt-4 mb-2 leading-tight">{{ lang === 'zh' ? selectedHouse.title : selectedHouse.titleVN }}</h2>
                     <p class="text-xs text-gray-400 mb-6">{{ selectedHouse.city }} · 近校園優質房源</p>
                     
-                    <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-gray-50 p-4 rounded-2xl">
                             <span class="text-[10px] text-gray-400 font-bold uppercase">{{ t.priceLabel }}</span>
                             <div class="text-xl font-black text-green-600">${{ selectedHouse.price.toLocaleString() }}</div>
@@ -127,41 +140,38 @@
                         </div>
                     </div>
 
-                    <div class="mb-8">
+                    <div class="mb-6">
                         <h4 class="font-bold text-gray-800 text-sm mb-4 border-b border-gray-100 pb-2">{{ t.equipLabel }}</h4>
                         <div class="flex flex-wrap gap-2">
                             <span v-for="tag in t.equipList" class="text-[10px] font-bold border border-green-100 bg-green-50 text-green-600 px-3 py-2 rounded-xl">✓ {{ tag }}</span>
                         </div>
                     </div>
 
-                    <!-- 預約看房按鈕 (檢查登入) -->
-                    <button @click="handleBooking" class="w-full bg-primary-green text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-green-100 hover:brightness-105 active:scale-95 transition mt-auto">
+                    <button @click="handleBooking" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black text-lg shadow-xl hover:brightness-105 transition mt-auto">
                         {{ t.contactBtn }}
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 登入與註冊視窗 -->
+        <!-- 登錄註冊視窗 -->
         <div v-if="activeModal" class="fixed inset-0 bg-green-950/50 backdrop-blur-md z-[110] flex items-center justify-center p-4" @click.self="activeModal = null">
-            <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl relative animate-in zoom-in duration-300">
+            <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl relative">
                 <button @click="activeModal = null" class="absolute top-6 right-6 text-gray-300">✕</button>
                 <div class="text-center mb-8">
-                    <div class="text-4xl mb-2">🌿</div>
+                    <div class="text-4xl mb-2">🏠</div>
                     <h3 class="text-2xl font-black text-gray-800">{{ activeModal === 'login' ? t.login : t.register }}</h3>
                     <p v-if="loginRedirectNotice" class="text-red-500 text-xs mt-2 font-bold">{{ t.loginNotice }}</p>
                 </div>
                 <div class="space-y-4">
-                    <input v-if="activeModal === 'register'" v-model="authForm.name" type="text" :placeholder="t.nameInput" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
-                    <input v-model="authForm.email" type="email" placeholder="Email" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
-                    <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
-                    <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:brightness-105 transition">
+                    <input v-if="activeModal === 'register'" v-model="authForm.name" type="text" :placeholder="t.nameInput" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400">
+                    <input v-model="authForm.email" type="email" placeholder="Email" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400">
+                    <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400">
+                    <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black text-lg">
                         {{ activeModal === 'login' ? t.loginSubmit : t.registerSubmit }}
                     </button>
-                    <p class="text-center text-xs text-gray-400 mt-4">
-                        <a href="#" @click="activeModal = (activeModal === 'login' ? 'register' : 'login')" class="text-green-500 font-bold underline">
-                            {{ activeModal === 'login' ? t.gotoRegister : t.gotoLogin }}
-                        </a>
+                    <p class="text-center text-xs text-green-500 font-bold mt-4 underline cursor-pointer" @click="activeModal = (activeModal === 'login' ? 'register' : 'login')">
+                        {{ activeModal === 'login' ? t.gotoRegister : t.gotoLogin }}
                     </p>
                 </div>
             </div>
@@ -185,32 +195,32 @@
 
                 const i18n = {
                     zh: {
-                        login: "登入", logout: "登出", register: "註冊",
-                        loginNotice: "請先登入會員，即可聯絡房東預約",
+                        login: "登入會員", logout: "登出", register: "註冊帳號", loginNotice: "請先登入，即可預約看房",
                         nameInput: "真實姓名", loginSubmit: "立即登入", registerSubmit: "完成註冊",
                         gotoRegister: "還沒有帳號？按此註冊", gotoLogin: "已有帳號？前往登入",
-                        allAreas: "全台灣所有地區", allTypes: "所有房屋類型",
+                        areaLabel: "地區", priceLabelSelect: "預算", typeLabel: "房型",
+                        allAreas: "所有地區", allTypes: "所有類型",
                         type1: "獨立套房", type2: "整層住家", type3: "雅房",
-                        allPrice: "不限租金預算", price1: "6,000元以下", price2: "6,001 - 8,000元", price3: "8,000元以上",
-                        resetBtn: "重置篩選", listTitle: "學生精選房源", viewDetail: "查看詳情",
-                        priceLabel: "租金", sizeLabel: "坪數", equipLabel: "房屋設備",
+                        allPrice: "不限金額", price1: "6,000元以下", price2: "6,001 - 8,000元", price3: "8,000元以上",
+                        resetBtn: "重置", listTitle: "最新學生房源", viewDetail: "查看詳情",
+                        priceLabel: "租金/月", sizeLabel: "坪數", equipLabel: "房屋設備",
                         equipList: ['冷氣', '冰箱', '洗衣機', 'Wi-Fi', '床舖'],
-                        contactBtn: "立即預約看房",
-                        bookingSuccess: "預約成功！房東將會儘快聯絡您。"
+                        contactBtn: "立即預約看房 (Liên hệ xem phòng)",
+                        bookingSuccess: "預約成功！房東將儘快與您聯繫。"
                     },
                     vn: {
-                        login: "Đăng nhập", logout: "Đăng xuất", register: "Đăng ký",
-                        loginNotice: "Vui lòng đăng nhập để liên hệ xem phòng",
-                        nameInput: "Họ và tên", loginSubmit: "Đăng nhập ngay", registerSubmit: "Hoàn tất đăng ký",
+                        login: "Đăng nhập", logout: "Đăng xuất", register: "Đăng ký", loginNotice: "Vui lòng đăng nhập để xem phòng",
+                        nameInput: "Họ và tên", loginSubmit: "Đăng nhập", registerSubmit: "Đăng ký ngay",
                         gotoRegister: "Chưa có tài khoản? Đăng ký", gotoLogin: "Đã có tài khoản? Đăng nhập",
-                        allAreas: "Tất cả khu vực", allTypes: "Loại phòng trọ",
+                        areaLabel: "Vị trí", priceLabelSelect: "Giá", typeLabel: "Loại",
+                        allAreas: "Tất cả khu vực", allTypes: "Tất cả loại phòng",
                         type1: "Phòng khép kín", type2: "Nhà nguyên căn", type3: "Phòng chung chủ",
-                        allPrice: "Mức giá thuê", price1: "Dưới 6.000", price2: "6.001 - 8.000", price3: "Trên 8.000",
+                        allPrice: "Mức giá", price1: "Dưới 6.000", price2: "6.001 - 8.000", price3: "Trên 8.000",
                         resetBtn: "Đặt lại", listTitle: "Phòng trọ đề xuất", viewDetail: "Chi tiết",
                         priceLabel: "Giá thuê", sizeLabel: "Diện tích", equipLabel: "Tiện nghi",
                         equipList: ['Điều hòa', 'Tủ lạnh', 'Máy giặt', 'Wi-Fi', 'Giường'],
-                        contactBtn: "Liên hệ xem phòng",
-                        bookingSuccess: "Đặt lịch thành công! Chủ trọ sẽ sớm liên hệ với bạn."
+                        contactBtn: "Liên hệ xem phòng ngay",
+                        bookingSuccess: "Đặt lịch thành công! Chủ trọ sẽ sớm liên hệ bạn."
                     }
                 };
 
@@ -218,10 +228,9 @@
 
                 const houses = ref([]);
                 const generateData = () => {
-                    const titlesZH = ["超值學生套房", "近校園採光美宅", "學生價優質空間", "全新裝潢美房"];
-                    const titlesVN = ["Trọ SV giá rẻ", "Phòng gần trường sạch đẹp", "Phòng giá SV", "Phòng trọ mới đẹp"];
+                    const titlesZH = ["學生限定優質套房", "近校園採光美宅", "小資族首選雅房", "全新裝潢學生房"];
+                    const titlesVN = ["Phòng SV giá rẻ", "Trọ gần trường sạch đẹp", "Phòng trọ tiện nghi", "Trọ mới hoàn thiện"];
                     const types = ["獨立套房", "整層住家", "雅房"];
-                    const typesVN = ["Phòng khép kín", "Nhà nguyên căn", "Phòng chung chủ"];
                     const prices = [4500, 5000, 5500, 6000, 6400, 7000, 7500, 8000, 8500, 9000];
 
                     for(let i=0; i<30; i++) {
@@ -233,7 +242,6 @@
                             city: cities[i % cities.length],
                             price: prices[i % 10],
                             type: types[i % 3],
-                            typeVN: typesVN[i % 3],
                             size: 5 + (i % 5),
                             img: `${imgNum}.jpeg`,
                             isFav: false
@@ -258,8 +266,7 @@
                 };
 
                 const submitAuth = () => {
-                    if(!authForm.value.email || !authForm.value.password) return alert('Input required');
-                    // 模擬登入：直接將 Email 前綴當作名字
+                    if(!authForm.value.email || !authForm.value.password) return;
                     const name = activeModal.value === 'register' ? authForm.value.name : authForm.value.email.split('@')[0];
                     currentUser.value = { name: name || 'User' };
                     localStorage.setItem('user', JSON.stringify(currentUser.value));
@@ -267,10 +274,7 @@
                     loginRedirectNotice.value = false;
                 };
 
-                const logout = () => {
-                    currentUser.value = null;
-                    localStorage.removeItem('user');
-                };
+                const logout = () => { currentUser.value = null; localStorage.removeItem('user'); };
 
                 const filteredHouses = computed(() => {
                     return houses.value.filter(h => {
