@@ -21,6 +21,7 @@
         <!-- 導覽列 -->
         <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-green-50">
             <div class="container mx-auto px-4 h-20 flex justify-between items-center">
+                <!-- Logo 區 -->
                 <div class="flex items-center gap-3 cursor-pointer" @click="resetFilter">
                     <img src="logo.jpeg" alt="Logo" class="h-12 w-auto rounded-lg" onerror="this.src='https://via.placeholder.com/50/48bb78/fff?text=TD'">
                     <div class="flex flex-col">
@@ -28,12 +29,30 @@
                         <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">4120C214 玲情怡</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <button @click="toggleLang" class="bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition shadow-sm">
+
+                <!-- 語系切換與登入按鍵區 -->
+                <div class="flex items-center gap-3">
+                    <!-- 語言切換 -->
+                    <button @click="toggleLang" class="hidden sm:block bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition shadow-sm">
                         {{ lang === 'zh' ? 'Tiếng Việt' : '中文介面' }}
                     </button>
-                    <template v-if="currentUser">
-                        <span class="text-gray-700 font-bold text-sm hidden sm:block">Hi, {{ currentUser.name }}</span>
+
+                    <!-- 登錄與註冊按鍵 (這就是妳要求的登錄按鍵) -->
+                    <template v-if="!currentUser">
+                        <button @click="openModal('login')" class="text-gray-500 hover:text-green-600 font-bold text-sm px-2">
+                            {{ t.login }}
+                        </button>
+                        <button @click="openModal('register')" class="bg-primary-green text-white px-4 py-2 rounded-full font-bold text-sm shadow-md hover:brightness-105 active:scale-95 transition">
+                            {{ t.register }}
+                        </button>
+                    </template>
+                    
+                    <!-- 已登入顯示 -->
+                    <template v-else>
+                        <div class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+                            <span class="text-gray-700 font-bold text-sm">👤 {{ currentUser.name }}</span>
+                            <button @click="logout" class="text-xs text-red-500 font-bold hover:underline">{{ t.logout }}</button>
+                        </div>
                     </template>
                 </div>
             </div>
@@ -77,12 +96,12 @@
         <main class="container mx-auto py-8 px-4">
             <h2 class="text-xl font-black text-gray-800 mb-6">{{ t.listTitle }} ({{ filteredHouses.length }})</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2rem] border border-gray-50 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer">
-                    <img :src="h.img" class="w-full h-48 object-cover">
-                    <div class="p-5 text-center">
-                        <div class="text-[10px] font-bold text-green-500">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
-                        <h3 class="text-md font-bold text-gray-800 mb-3 line-clamp-1">{{ lang === 'zh' ? h.title : h.titleVN }}</h3>
-                        <div class="text-xl font-black text-green-600">${{h.price.toLocaleString()}}</div>
+                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer group">
+                    <img :src="h.img" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
+                    <div class="p-5">
+                        <div class="text-[10px] font-bold text-green-500 mb-1">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
+                        <h3 class="text-md font-bold text-gray-800 mb-3 line-clamp-1 leading-tight">{{ lang === 'zh' ? h.title : h.titleVN }}</h3>
+                        <div class="text-xl font-black text-green-600 border-t pt-3">${{h.price.toLocaleString()}}</div>
                     </div>
                 </div>
             </div>
@@ -108,7 +127,7 @@
 
         <!-- 聊天室 (Bot) -->
         <div v-if="isChatOpen" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-md h-[550px] rounded-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-300">
+            <div class="bg-white w-full max-w-md h-[550px] rounded-[2.5rem] flex flex-col shadow-2xl relative">
                 <div class="bg-primary-green p-6 flex items-center justify-between rounded-t-[2.5rem] text-white">
                     <span class="font-bold">玲情怡 Tình Di</span>
                     <button @click="isChatOpen = false">✕</button>
@@ -119,7 +138,7 @@
                     </div>
                 </div>
                 <div class="p-4 flex gap-2 border-t bg-white rounded-b-[2.5rem]">
-                    <input v-model="userInput" @keyup.enter="sendChat" class="flex-1 bg-gray-100 rounded-full px-4 text-xs outline-none" :placeholder="t.chatPlaceholder">
+                    <input v-model="userInput" @keyup.enter="sendChat" class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-xs outline-none" :placeholder="t.chatPlaceholder">
                     <button @click="sendChat" class="bg-primary-green text-white w-10 h-10 rounded-full flex items-center justify-center">➤</button>
                 </div>
             </div>
@@ -137,32 +156,43 @@
             <div class="bg-white rounded-[2.5rem] p-10 max-w-xs w-full text-center shadow-2xl relative animate-in zoom-in duration-300">
                 <button @click="isShowQR = false" class="absolute top-6 right-6 text-gray-300">✕</button>
                 <h3 class="text-lg font-black text-gray-800 mb-2">{{ lang === 'zh' ? '手機掃描看效果' : 'Quét mã để xem' }}</h3>
-                <div class="bg-gray-50 p-4 rounded-3xl mb-4 mt-4">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://linhoanh280505-bot.github.io/my-rent-site/" alt="QR Code" class="w-full h-auto">
+                <div class="bg-gray-50 p-4 rounded-3xl mb-4 mt-4 text-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://linhoanh280505-bot.github.io/my-rent-site/" alt="QR Code" class="mx-auto w-full h-auto">
                 </div>
                 <p class="text-[10px] font-bold text-green-500 tracking-widest">linhoanh280505-bot</p>
             </div>
         </div>
 
-        <!-- 登錄視窗 -->
-        <div v-if="activeModal" class="fixed inset-0 bg-green-950/50 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
-                <h3 class="text-xl font-black mb-6 text-center text-gray-800">{{ activeModal === 'login' ? t.login : t.register }}</h3>
-                <input v-model="authForm.email" placeholder="Email" class="w-full bg-gray-50 p-4 rounded-xl mb-4 outline-none">
-                <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 p-4 rounded-xl mb-4 outline-none">
-                <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-xl font-black shadow-lg">確認登入</button>
+        <!-- 登錄與註冊彈窗 -->
+        <div v-if="activeModal" class="fixed inset-0 bg-green-900/40 backdrop-blur-md z-[210] flex items-center justify-center p-4" @click.self="activeModal = null">
+            <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl relative animate-in zoom-in duration-300">
+                <button @click="activeModal = null" class="absolute top-8 right-8 text-gray-300 hover:text-gray-600">✕</button>
+                <div class="text-center mb-8">
+                    <div class="text-4xl mb-4 text-green-500">🌿</div>
+                    <h3 class="text-2xl font-black text-gray-800">{{ activeModal === 'login' ? t.login : t.register }}</h3>
+                </div>
+                <div class="space-y-4">
+                    <input v-if="activeModal === 'register'" v-model="authForm.name" type="text" :placeholder="t.nameInput" class="w-full bg-gray-50 border-0 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
+                    <input v-model="authForm.email" type="email" placeholder="Email" class="w-full bg-gray-50 border-0 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
+                    <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 border-0 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-400 transition">
+                    <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:brightness-105 active:scale-95 transition">
+                        {{ activeModal === 'login' ? t.login : t.register }}
+                    </button>
+                    <p class="text-center text-xs text-green-600 font-bold mt-4 underline cursor-pointer" @click="activeModal = (activeModal === 'login' ? 'register' : 'login')">
+                        {{ activeModal === 'login' ? t.gotoRegister : t.gotoLogin }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 這裡就是 JavaScript 的區塊 -->
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
                 const lang = ref('zh');
-                const isShowQR = ref(false); // <--- 控制 QR Code 顯示的 JavaScript 變數
+                const isShowQR = ref(false);
                 const filter = ref({city: '', type: '', priceRange: 'all'});
                 const cities = ["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市", "屏東縣", "宜蘭縣"];
                 const currentUser = ref(null);
@@ -171,28 +201,34 @@
                 const isChatOpen = ref(false);
                 const chatMessages = ref([]);
                 const userInput = ref('');
-                const authForm = ref({email:'', password:''});
+                const authForm = ref({name:'', email:'', password:''});
 
                 const i18n = {
                     zh: {
+                        login: "登入會員", register: "註冊帳號", logout: "登出", 
+                        gotoRegister: "還沒有帳號？按此註冊", gotoLogin: "已有帳號？前往登入",
+                        nameInput: "真實姓名",
                         areaLabel: "地區", typeLabel: "房型", priceLabelSelect: "預算",
                         allAreas: "所有地區", allTypes: "所有房型", allPrice: "不限預算",
                         type1: "獨立套房", type2: "整層住家", type3: "雅房",
                         price1: "6,000以下", price2: "6,001-8,000", price3: "8,000以上",
-                        resetBtn: "重置", listTitle: "最新房源", viewDetail: "詳情",
-                        contactBtn: "聯絡房東預約看房", login: "登入會員",
-                        priceLabel: "租金", sizeLabel: "坪數", chatPlaceholder: "輸入訊息...",
+                        resetBtn: "重置", listTitle: "最新房源推薦", viewDetail: "詳情",
+                        contactBtn: "聯絡房東預約看房", priceLabel: "租金", sizeLabel: "坪數",
+                        chatPlaceholder: "輸入訊息...",
                         botWelcome: "你好！我是機器人。玲情怡在忙，請問你想預約什麼時候看房？",
                         landlordReply: "你好！沒問題，那間房還在，這週末下午兩點可以嗎？"
                     },
                     vn: {
-                        areaLabel: "Khu vực", typeLabel: "Loại phòng", priceLabelSelect: "Giá",
+                        login: "Đăng nhập", register: "Đăng ký", logout: "Thoát",
+                        gotoRegister: "Chưa có tài khoản? Đăng ký", gotoLogin: "Đã có tài khoản? Đăng nhập",
+                        nameInput: "Họ và tên",
+                        areaLabel: "Vị trí", typeLabel: "Loại phòng", priceLabelSelect: "Giá",
                         allAreas: "Tất cả", allTypes: "Tất cả loại", allPrice: "Mọi giá",
                         type1: "Phòng khép kín", type2: "Nhà nguyên căn", type3: "Phòng chung chủ",
                         price1: "Dưới 6.000", price2: "6.001-8.000", price3: "Trên 8.000",
                         resetBtn: "Xóa", listTitle: "Phòng trọ tốt", viewDetail: "Chi tiết",
-                        contactBtn: "Liên hệ xem phòng", login: "Đăng nhập",
-                        priceLabel: "Giá thuê", sizeLabel: "Diện tích", chatPlaceholder: "Nhập tin nhắn...",
+                        contactBtn: "Liên hệ xem phòng", priceLabel: "Giá thuê", sizeLabel: "Diện tích",
+                        chatPlaceholder: "Nhập tin nhắn...",
                         botWelcome: "Chào bạn! Chị Tình Di bận, bạn muốn xem phòng lúc nào?",
                         landlordReply: "Chào bạn! OK nhé, phòng vẫn còn, chiều thứ 7 lúc 2h được không?"
                     }
@@ -220,6 +256,17 @@
                     if(saved) currentUser.value = JSON.parse(saved);
                 });
 
+                const submitAuth = () => {
+                    if(!authForm.value.email) return;
+                    const name = activeModal.value === 'register' ? authForm.value.name : authForm.value.email.split('@')[0];
+                    currentUser.value = { name: name || 'User' };
+                    localStorage.setItem('user', JSON.stringify(currentUser.value));
+                    activeModal.value = null;
+                };
+
+                const logout = () => { currentUser.value = null; localStorage.removeItem('user'); };
+                const openModal = (m) => { activeModal.value = m; authForm.value = {name:'', email:'', password:''}; };
+
                 const filteredHouses = computed(() => {
                     return houses.value.filter(h => {
                         const cMatch = !filter.value.city || h.city === filter.value.city;
@@ -245,16 +292,10 @@
                     setTimeout(() => chatMessages.value.push({sender:'landlord', text: t.value.landlordReply}), 2000);
                 };
 
-                const submitAuth = () => {
-                    currentUser.value = {name: authForm.value.email.split('@')[0]};
-                    localStorage.setItem('user', JSON.stringify(currentUser.value));
-                    activeModal.value = null;
-                };
-
                 const toggleLang = () => lang.value = lang.value === 'zh' ? 'vn' : 'zh';
                 const resetFilter = () => filter.value = {city: '', type: '', priceRange: 'all'};
 
-                return { lang, t, filter, cities, filteredHouses, selectedHouse, currentUser, activeModal, authForm, isChatOpen, chatMessages, userInput, isShowQR, toggleLang, resetFilter, handleBooking, sendChat, submitAuth };
+                return { lang, t, filter, cities, filteredHouses, selectedHouse, currentUser, activeModal, authForm, isChatOpen, chatMessages, userInput, isShowQR, toggleLang, resetFilter, openModal, logout, handleBooking, sendChat, submitAuth };
             }
         }).mount('#app');
     </script>
