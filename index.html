@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button @click="toggleLang" class="bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition">
+                    <button @click="toggleLang" class="bg-green-50 text-green-600 border border-green-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition shadow-sm">
                         {{ lang === 'zh' ? 'Tiếng Việt' : '中文介面' }}
                     </button>
                     <template v-if="currentUser">
@@ -39,91 +39,76 @@
             </div>
         </nav>
 
-        <!-- 橫向下拉選單區 (Horizontal Select Menus) -->
+        <!-- 橫向下拉選單區 -->
         <div class="bg-white border-b sticky top-20 z-40 shadow-sm overflow-x-auto no-scrollbar">
             <div class="container mx-auto px-4 py-4 min-w-[500px] md:min-w-0">
                 <div class="flex flex-row items-center gap-3">
-                    
-                    <!-- 地區選單 -->
-                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3 focus-within:border-green-400 transition">
+                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3">
                         <span class="text-[9px] text-gray-400 font-bold mr-1 uppercase">{{ t.areaLabel }}</span>
-                        <select v-model="filter.city" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none cursor-pointer">
+                        <select v-model="filter.city" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none">
                             <option value="">{{ t.allAreas }}</option>
                             <option v-for="c in cities" :value="c">{{c}}</option>
                         </select>
                     </div>
-
-                    <!-- 房型選單 (妳要求的房型下拉選單) -->
-                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3 focus-within:border-green-400 transition">
+                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3">
                         <span class="text-[9px] text-gray-400 font-bold mr-1 uppercase">{{ t.typeLabel }}</span>
-                        <select v-model="filter.type" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none cursor-pointer">
+                        <select v-model="filter.type" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none">
                             <option value="">{{ t.allTypes }}</option>
                             <option value="獨立套房">{{ t.type1 }}</option>
                             <option value="雅房">{{ t.type3 }}</option>
                             <option value="整層住家">{{ t.type2 }}</option>
                         </select>
                     </div>
-
-                    <!-- 價格選單 -->
-                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3 focus-within:border-green-400 transition">
+                    <div class="filter-item flex items-center bg-gray-50 border border-gray-100 rounded-2xl px-3">
                         <span class="text-[9px] text-gray-400 font-bold mr-1 uppercase">{{ t.priceLabelSelect }}</span>
-                        <select v-model="filter.priceRange" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none cursor-pointer">
+                        <select v-model="filter.priceRange" class="bg-transparent w-full py-3 text-xs font-bold text-gray-700 outline-none">
                             <option value="all">{{ t.allPrice }}</option>
                             <option value="0-6000">{{ t.price1 }}</option>
                             <option value="6001-8000">{{ t.price2 }}</option>
                             <option value="8001-999999">{{ t.price3 }}</option>
                         </select>
                     </div>
-
-                    <!-- 重置按鈕 -->
-                    <button @click="resetFilter" class="bg-gray-800 text-white font-bold px-5 py-3 rounded-2xl text-xs whitespace-nowrap active:scale-95 transition">
-                        {{ t.resetBtn }}
-                    </button>
+                    <button @click="resetFilter" class="bg-gray-800 text-white font-bold px-5 py-3 rounded-2xl text-xs">{{ t.resetBtn }}</button>
                 </div>
             </div>
         </div>
 
         <!-- 房源列表 -->
         <main class="container mx-auto py-8 px-4">
-            <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-primary-green rounded-full"></span>
-                {{ t.listTitle }} ({{ filteredHouses.length }})
-            </h2>
-
+            <h2 class="text-xl font-black text-gray-800 mb-6">{{ t.listTitle }} ({{ filteredHouses.length }})</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2rem] border border-gray-50 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer relative group">
-                    <img :src="h.img" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
-                    <div class="p-5">
-                        <div class="text-[10px] font-bold text-green-500 mb-1">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
-                        <h3 class="text-md font-bold text-gray-800 mb-4 line-clamp-1 leading-tight">{{ lang === 'zh' ? h.title : h.titleVN }}</h3>
-                        <div class="flex justify-between items-center border-t border-gray-50 pt-3">
-                            <div class="text-xl font-black text-green-600">${{h.price.toLocaleString()}}</div>
-                            <span class="text-[10px] font-bold bg-green-50 text-green-600 px-3 py-1.5 rounded-full uppercase">{{ t.viewDetail }}</span>
-                        </div>
+                <div v-for="h in filteredHouses" :key="h.id" @click="selectedHouse = h" class="bg-white rounded-[2rem] border border-gray-50 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer">
+                    <img :src="h.img" class="w-full h-48 object-cover">
+                    <div class="p-5 text-center">
+                        <div class="text-[10px] font-bold text-green-500">{{ lang === 'zh' ? h.type : h.typeVN }}</div>
+                        <h3 class="text-md font-bold text-gray-800 mb-3 line-clamp-1">{{ lang === 'zh' ? h.title : h.titleVN }}</h3>
+                        <div class="text-xl font-black text-green-600">${{h.price.toLocaleString()}}</div>
                     </div>
                 </div>
             </div>
         </main>
 
         <!-- 詳情視窗 -->
-        <div v-if="selectedHouse" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" @click.self="selectedHouse = null">
+        <div v-if="selectedHouse" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[3rem] overflow-hidden relative flex flex-col md:flex-row shadow-2xl animate-in zoom-in duration-300">
-                <button @click="selectedHouse = null" class="absolute top-6 right-6 z-10 bg-white shadow-xl rounded-full w-10 h-10 font-bold">✕</button>
+                <button @click="selectedHouse = null" class="absolute top-4 right-4 z-10 bg-white/80 rounded-full w-10 h-10 font-bold">✕</button>
                 <img :src="selectedHouse.img" class="w-full md:w-1/2 h-64 md:h-auto object-cover">
-                <div class="w-full md:w-1/2 p-10 overflow-y-auto no-scrollbar bg-white flex flex-col">
-                    <span class="text-xs font-bold text-green-500 bg-green-50 px-3 py-1 rounded-full uppercase w-fit">{{ lang === 'zh' ? selectedHouse.type : selectedHouse.typeVN }}</span>
-                    <h2 class="text-2xl font-black text-gray-800 mt-4 mb-2">{{ lang === 'zh' ? selectedHouse.title : selectedHouse.titleVN }}</h2>
-                    <p class="text-xs text-gray-400 mb-6">{{ selectedHouse.city }} · 近校園優質房源</p>
-                    <button @click="handleBooking" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black text-lg shadow-xl hover:brightness-105 transition mt-auto">
+                <div class="w-full md:w-1/2 p-10 overflow-y-auto no-scrollbar bg-white">
+                    <h2 class="text-2xl font-black text-gray-800 mb-4">{{ lang === 'zh' ? selectedHouse.title : selectedHouse.titleVN }}</h2>
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-10 flex justify-between">
+                        <div><span class="text-xs text-gray-400">{{ t.priceLabel }}</span><div class="text-xl font-black text-green-600">${{ selectedHouse.price }}</div></div>
+                        <div><span class="text-xs text-gray-400">{{ t.sizeLabel }}</span><div class="text-xl font-black text-gray-700">{{ selectedHouse.size }} 坪</div></div>
+                    </div>
+                    <button @click="handleBooking" class="w-full bg-primary-green text-white py-4 rounded-2xl font-black shadow-lg">
                         {{ t.contactBtn }}
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 聊天機器人視窗 (Bot) -->
+        <!-- 聊天室 (Bot) -->
         <div v-if="isChatOpen" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-md h-[550px] rounded-[2.5rem] flex flex-col shadow-2xl relative">
+            <div class="bg-white w-full max-w-md h-[550px] rounded-[2.5rem] flex flex-col shadow-2xl relative animate-in slide-in-from-bottom duration-300">
                 <div class="bg-primary-green p-6 flex items-center justify-between rounded-t-[2.5rem] text-white">
                     <span class="font-bold">玲情怡 Tình Di</span>
                     <button @click="isChatOpen = false">✕</button>
@@ -134,32 +119,50 @@
                     </div>
                 </div>
                 <div class="p-4 flex gap-2 border-t bg-white rounded-b-[2.5rem]">
-                    <input v-model="userInput" @keyup.enter="sendChat" class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-xs outline-none" :placeholder="t.chatPlaceholder">
-                    <button @click="sendChat" class="bg-primary-green text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">➤</button>
+                    <input v-model="userInput" @keyup.enter="sendChat" class="flex-1 bg-gray-100 rounded-full px-4 text-xs outline-none" :placeholder="t.chatPlaceholder">
+                    <button @click="sendChat" class="bg-primary-green text-white w-10 h-10 rounded-full flex items-center justify-center">➤</button>
                 </div>
             </div>
         </div>
 
+        <!-- QR Code 按鈕 -->
+        <div class="fixed bottom-6 right-6 z-[130]">
+            <button @click="isShowQR = true" class="bg-white border-2 border-green-500 text-green-600 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-green-500 hover:text-white transition-all transform hover:scale-110">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+            </button>
+        </div>
+
+        <!-- QR Code 彈窗 -->
+        <div v-if="isShowQR" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6" @click.self="isShowQR = false">
+            <div class="bg-white rounded-[2.5rem] p-10 max-w-xs w-full text-center shadow-2xl relative animate-in zoom-in duration-300">
+                <button @click="isShowQR = false" class="absolute top-6 right-6 text-gray-300">✕</button>
+                <h3 class="text-lg font-black text-gray-800 mb-2">{{ lang === 'zh' ? '手機掃描看效果' : 'Quét mã để xem' }}</h3>
+                <div class="bg-gray-50 p-4 rounded-3xl mb-4 mt-4">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://linhoanh280505-bot.github.io/my-rent-site/" alt="QR Code" class="w-full h-auto">
+                </div>
+                <p class="text-[10px] font-bold text-green-500 tracking-widest">linhoanh280505-bot</p>
+            </div>
+        </div>
+
         <!-- 登錄視窗 -->
-        <div v-if="activeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div v-if="activeModal" class="fixed inset-0 bg-green-950/50 backdrop-blur-md z-[110] flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
                 <h3 class="text-xl font-black mb-6 text-center text-gray-800">{{ activeModal === 'login' ? t.login : t.register }}</h3>
-                <input v-model="authForm.email" placeholder="Email" class="w-full bg-gray-50 p-4 rounded-xl mb-3 outline-none focus:ring-2 focus:ring-green-400 transition">
-                <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 p-4 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-green-400 transition">
-                <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-xl font-black shadow-lg hover:brightness-105 transition">{{ t.loginSubmit }}</button>
-                <p class="text-center text-xs text-green-500 font-bold mt-5 underline cursor-pointer" @click="activeModal = (activeModal === 'login' ? 'register' : 'login')">
-                    {{ activeModal === 'login' ? t.gotoRegister : t.gotoLogin }}
-                </p>
+                <input v-model="authForm.email" placeholder="Email" class="w-full bg-gray-50 p-4 rounded-xl mb-4 outline-none">
+                <input v-model="authForm.password" type="password" placeholder="Password" class="w-full bg-gray-50 p-4 rounded-xl mb-4 outline-none">
+                <button @click="submitAuth" class="w-full bg-primary-green text-white py-4 rounded-xl font-black shadow-lg">確認登入</button>
             </div>
         </div>
     </div>
 
+    <!-- 這裡就是 JavaScript 的區塊 -->
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
                 const lang = ref('zh');
+                const isShowQR = ref(false); // <--- 控制 QR Code 顯示的 JavaScript 變數
                 const filter = ref({city: '', type: '', priceRange: 'all'});
                 const cities = ["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市", "屏東縣", "宜蘭縣"];
                 const currentUser = ref(null);
@@ -173,28 +176,24 @@
                 const i18n = {
                     zh: {
                         areaLabel: "地區", typeLabel: "房型", priceLabelSelect: "預算",
-                        allAreas: "所有地區", allTypes: "所有房型", allPrice: "不限租金",
+                        allAreas: "所有地區", allTypes: "所有房型", allPrice: "不限預算",
                         type1: "獨立套房", type2: "整層住家", type3: "雅房",
                         price1: "6,000以下", price2: "6,001-8,000", price3: "8,000以上",
-                        resetBtn: "重置搜尋", listTitle: "最新推薦房源", viewDetail: "詳情",
-                        contactBtn: "聯絡房東預約看房 (Liên hệ xem phòng)",
-                        login: "登入會員", register: "註冊帳號", loginSubmit: "確認登入",
-                        gotoRegister: "還沒有帳號？按此註冊", gotoLogin: "已有帳號？前往登入",
-                        chatPlaceholder: "請輸入訊息...",
-                        botWelcome: "你好！玲情怡在忙，我是機器人助理。我已經通知她了！請問你想預約什麼時候看房？",
+                        resetBtn: "重置", listTitle: "最新房源", viewDetail: "詳情",
+                        contactBtn: "聯絡房東預約看房", login: "登入會員",
+                        priceLabel: "租金", sizeLabel: "坪數", chatPlaceholder: "輸入訊息...",
+                        botWelcome: "你好！我是機器人。玲情怡在忙，請問你想預約什麼時候看房？",
                         landlordReply: "你好！沒問題，那間房還在，這週末下午兩點可以嗎？"
                     },
                     vn: {
                         areaLabel: "Khu vực", typeLabel: "Loại phòng", priceLabelSelect: "Giá",
-                        allAreas: "Tất cả khu vực", allTypes: "Tất cả loại phòng", allPrice: "Mọi mức giá",
+                        allAreas: "Tất cả", allTypes: "Tất cả loại", allPrice: "Mọi giá",
                         type1: "Phòng khép kín", type2: "Nhà nguyên căn", type3: "Phòng chung chủ",
                         price1: "Dưới 6.000", price2: "6.001-8.000", price3: "Trên 8.000",
-                        resetBtn: "Đặt lại", listTitle: "Phòng trọ đề xuất", viewDetail: "Chi tiết",
-                        contactBtn: "Liên hệ đặt lịch xem phòng",
-                        login: "Đăng nhập", register: "Đăng ký", loginSubmit: "Đăng nhập",
-                        gotoRegister: "Chưa có tài khoản? Đăng ký", gotoLogin: "Đã có tài khoản? Đăng nhập",
-                        chatPlaceholder: "Nhập tin nhắn...",
-                        botWelcome: "Chào bạn! Chị Tình Di bận, mình là Bot trợ lý. Bạn muốn xem phòng vào lúc nào?",
+                        resetBtn: "Xóa", listTitle: "Phòng trọ tốt", viewDetail: "Chi tiết",
+                        contactBtn: "Liên hệ xem phòng", login: "Đăng nhập",
+                        priceLabel: "Giá thuê", sizeLabel: "Diện tích", chatPlaceholder: "Nhập tin nhắn...",
+                        botWelcome: "Chào bạn! Chị Tình Di bận, bạn muốn xem phòng lúc nào?",
                         landlordReply: "Chào bạn! OK nhé, phòng vẫn còn, chiều thứ 7 lúc 2h được không?"
                     }
                 };
@@ -204,15 +203,13 @@
 
                 const generateData = () => {
                     const titlesZH = ["學生推薦套房", "近校園採光屋", "超值雅房", "全新完工美房"];
-                    const titlesVN = ["Trọ SV tốt", "Trọ gần trường đẹp", "Phòng trọ giá rẻ", "Trọ mới hoàn thiện"];
                     const types = ["獨立套房", "雅房", "整層住家"];
                     const prices = [4500, 5000, 5500, 6000, 6400, 7000, 7500, 8000, 8500, 9000];
-
                     for(let i=0; i<30; i++) {
                         houses.value.push({
-                            id: i+1, title: titlesZH[i % 4], titleVN: titlesVN[i % 4],
+                            id: i+1, title: titlesZH[i % 4],
                             city: cities[i % cities.length], price: prices[i % 10], type: types[i % 3],
-                            size: 6+(i%5), img: (i+1).toString().padStart(2,'0')+".jpeg", isFav: false
+                            size: 6+(i%5), img: (i+1).toString().padStart(2,'0')+".jpeg"
                         });
                     }
                 };
@@ -257,7 +254,7 @@
                 const toggleLang = () => lang.value = lang.value === 'zh' ? 'vn' : 'zh';
                 const resetFilter = () => filter.value = {city: '', type: '', priceRange: 'all'};
 
-                return { lang, t, filter, cities, filteredHouses, selectedHouse, currentUser, activeModal, authForm, isChatOpen, chatMessages, userInput, toggleLang, resetFilter, handleBooking, sendChat, submitAuth };
+                return { lang, t, filter, cities, filteredHouses, selectedHouse, currentUser, activeModal, authForm, isChatOpen, chatMessages, userInput, isShowQR, toggleLang, resetFilter, handleBooking, sendChat, submitAuth };
             }
         }).mount('#app');
     </script>
